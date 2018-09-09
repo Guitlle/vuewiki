@@ -47,6 +47,7 @@ VueWrapper.prototype.refresh = function (changedTiddlers) {
         Object.getOwnPropertyNames(selfData).forEach(function (field) {
             if (that.blockUpdate && field!=="text") {
                 that.app.$data.self[field] = selfData[field];
+                that.blockUpdate = false;
     	    }
     	});  
     }
@@ -76,8 +77,15 @@ VueWrapper.prototype.render = function(parent,nextSibling) {
 	    vueInstance = VueInstances[that.currentTiddler.fields.title],
         foundParentNode = (vueInstance !== undefined) && that.document.contains(vueInstance.$el),
         selfData = {}, imports = {}, watches = {};
+    
+    
+    if (vueInstance !== undefined && !foundParentNode) {
+        VueInstances[this.currentTiddler.fields.title].$destroy();
+        delete VueInstances[this.currentTiddler.fields.title];
+    }
 
 	Object.assign(selfData, that.currentTiddler.fields);
+    delete selfData.text;
 
     Object.getOwnPropertyNames(selfData).forEach(function (field) {
         if (field.startsWith("tiddler_")) {
