@@ -1,0 +1,32 @@
+created: 20180831235154636
+modified: 20180904171256790
+module-type: parser
+tags: 
+title: $:/plugins/Guitlle/vuewiki/parser.js
+type: application/javascript
+
+/*\
+title: $:/plugins/Guitlle/vuewiki/parser.js
+type: application/javascript
+module-type: parser
+
+\*/
+(function(){
+
+/*jslint node: true, browser: true */
+/*global $tw: false */
+"use strict";
+
+var VuewikiParser = function(type,text,options) {
+    this.tree = [{type: "vuewrapper", tag: "$vuewrapper", children: [ 
+        { type: "raw", value: text }
+    ]}];
+};
+
+/*
+
+*/
+
+exports["application/vuejs-uiv"] = VuewikiParser;
+
+})();
