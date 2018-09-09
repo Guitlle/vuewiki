@@ -1,0 +1,18 @@
+{
+    "description": "Basic edition",
+    "plugins": [
+        "tiddlywiki/tiddlyweb",
+        "tiddlywiki/filesystem",
+        "Guitlle/vuewiki"
+    ],
+    "themes": [
+        "tiddlywiki/vanilla",
+        "tiddlywiki/snowwhite"
+    ],
+    "build": {
+        "index": [
+            "--output","../build/",
+            "--rendertiddler","$:/plugins/tiddlywiki/tiddlyweb/save/offline","docs.html","text/plain"
+        ]
+    }
+}
