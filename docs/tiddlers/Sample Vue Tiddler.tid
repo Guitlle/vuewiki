@@ -30,4 +30,7 @@ This is a list of the days of the week rendered using v-for.
 
 (This html table was built using vue.js v-for to iterate over the object properties. Try editing the external tiddler to see if this table is updated ;) )
 
+<date-picker v-model="imports.external.date"/>
+
+
 </div>
