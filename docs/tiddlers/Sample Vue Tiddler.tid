@@ -1,0 +1,33 @@
+created: 20180910042437190
+daysofweek: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+modified: 20180910043817226
+showtitle: true
+tags: 
+tiddler_external: External Tiddler
+title: Sample Vue Tiddler
+type: application/vuejs-uiv
+
+<div>
+
+<btn @click="self.showtitle = !self.showtitle" :type=" self.showtitle ? 'primary':'' ">Show title</btn> <hr>
+<h1 v-if="self.showtitle">Title shown when self.showtitle is true.</h1>
+
+This is a list of the days of the week rendered using v-for.
+
+<ol>
+   <li v-for="day in self.daysofweek"> {{day}} </li>
+</ol>
+
+<btn @click="self.daysofweek.push('Geekday')" type=" primary">Add a geekday to the week.</btn>
+
+<hr>
+
+<h3> Lets import a tiddler </h3>
+
+<table class="table">
+<tr v-for="(value, key, index) in imports.external"><th>{{key}}</th> <td> {{value}} </td></tr>
+</table>
+
+(This html table was built using vue.js v-for to iterate over the object properties. Try editing the external tiddler to see if this table is updated ;) )
+
+</div>
