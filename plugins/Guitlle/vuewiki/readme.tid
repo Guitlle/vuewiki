@@ -6,7 +6,7 @@ type: text/vnd.tiddlywiki
 
 ''VueWiki'' is a plugin that integrates vue.js with tiddlywiki. It is integrated with ''[ext[uiv|https://uiv.wxsm.space/getting-started]]'', a library of vue.js components that uses bootstrap. This plugin also includes bootstrap css and glyphicons. 
 
-To make a vue.js tiddler use the type ``application/vuejs-uiv``. The text of the tiddler will be used as the vue template and the tiddler fields will be available through the "self" namespace. You can also import another tiddler by having a field like so: 
+To make a vue.js tiddler use the type ``application/prs.vuejs``. This automatically includes the Uiv components library. The text of the tiddler will be used as the vue template and the tiddler fields will be available through the "self" namespace. You can also import another tiddler by having a field like so: 
 
 ```
 tiddler_namespace: My External Tiddler
