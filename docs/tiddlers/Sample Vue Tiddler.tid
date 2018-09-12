@@ -1,5 +1,8 @@
 created: 20180910042437190
 daysofweek: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+dictionary: {"x": "x letter", "y": "y letter", "z": "z letter"}
+temp_key: ""
+temp_value: ""
 modified: 20180910043817226
 showtitle: true
 tags: 
@@ -18,9 +21,27 @@ This is a list of the days of the week rendered using v-for.
    <li v-for="day in self.daysofweek"> {{day}} </li>
 </ol>
 
-<btn @click="self.daysofweek.push('Geekday')" type=" primary">Add a geekday to the week.</btn>
+<btn @click="arrayPush('self.daysofweek',  '', 'Geekday')" type=" primary">Add a geekday to the week.</btn>
 
 <hr>
+
+This is a dictionary: 
+
+<table class="table table-stripped">
+<tr v-for="(value, key, index) in self.dictionary"><th class="col-sm-4 text-right">{{key}}</th> <td> {{value}} </td></tr>
+</table>
+
+<form class="form-inline">
+  <div class="form-group">
+    <input type="text" class="form-control" placeholder="key" v-model="self.temp_key">
+  </div>
+  <div class="form-group">
+    <input type="text" class="form-control" placeholder ="value" v-model="self.temp_value">
+  </div>
+  <btn @click="objectSet('self.dictionary', self.temp_key, self.temp_value)">Add new value</btn>
+</form>
+<hr>
+
 
 <h3> Lets import a tiddler </h3>
 
@@ -30,7 +51,8 @@ This is a list of the days of the week rendered using v-for.
 
 (This html table was built using vue.js v-for to iterate over the object properties. Try editing the external tiddler to see if this table is updated ;) )
 
-<date-picker v-model="imports.external.date"/>
+Uiv includes a date picker widget. Let's use it with the external tiddler date field:
 
+<date-picker v-model="imports.external.date"/>
 
 </div>
