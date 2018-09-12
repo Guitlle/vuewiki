@@ -169,10 +169,16 @@ VueWrapper.prototype.render = function(parent,nextSibling) {
                                 pointer2 = pointer2[pathKeys2[i]];
                             }
                             var target = pointer2[pathKeys2[pathKeys2.length-1]];
-                            target = target.splice(start, delCount, item);
+                            if (item === undefined)
+                                target = target.splice(start, delCount);
+                            else 
+                                target = target.splice(start, delCount, item);
                         }
                         else {
-                            pointer2 = pointer2.splice(start, delCount, item);
+                            if (item === undefined) 
+                                pointer2.splice(start, delCount);
+                            else
+                                pointer2.splice(start, delCount, item);
                         }
                         this.$set(pointer, pathKeys[pathKeys.length - 1], pointer2);
                     },
@@ -182,13 +188,15 @@ VueWrapper.prototype.render = function(parent,nextSibling) {
                         for(var i = 0; i < pathKeys.length - 1; i++) { 
                             pointer = pointer[pathKeys[i]];
                         }
-                        var pointer2 = pointer[pathKeys[pathKeys.length - 1]];
+                        var pointer2 = pointer[pathKeys[pathKeys.length - 1]],
+                            pointer3 = pointer2;
+                        
                         if (extraPath !== "") {
                             var pathKeys2 = extraPath.split(".")
                             for(var i = 0; i < pathKeys2.length - 1; i++) { 
-                                pointer2 = pointer2[pathKeys2[i]];
+                                pointer3 = pointer3[pathKeys2[i]];
                             }
-                            pointer2[pathKeys2[pathKeys2.length-1]] = value;
+                            pointer3[pathKeys2[pathKeys2.length-1]] = value;
                             this.$set(pointer, pathKeys[pathKeys.length - 1], pointer2);
                         }
                     }
