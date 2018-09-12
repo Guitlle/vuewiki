@@ -25,3 +25,8 @@ See the [[Sample Vue Tiddler]] to see a working demo. Edit it to see how fields 
 | objectSet(fieldPath, extraPath, value)|This sets a value in a JSON object.|
 
 The [[Sample Vue Tiddler]] shows how to use these functions.
+
+!!! Examples:
+
+* [[Sample Vue Tiddler]]
+* [[Phonebook]]

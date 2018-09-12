@@ -1,0 +1,55 @@
+created: 20180910042437190
+daysofweek: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+modified: 20180910043817226
+tags: 
+title: Phonebook
+type: application/prs.vuejs
+data: [{"Nombre": "Berenice","Descripcion": "","Telefono": "25512454"}]
+editindex: null
+template: {"Nombre":"","Descripcion":"","Telefono":""}
+
+<div>
+    <div class="list-group">
+        <div class="list-group-item row" v-for="(item, itemIndex) in self.data">
+            <div v-if="self.editindex === itemIndex" class="col-sm-12">
+                <table class="table table-stripped">
+                    <tr v-for="(value, key, index) in item"><th class="col-sm-4 text-right">{{key}}</th> <td> 
+                        <input type="text" class="form-control"  :value="value" @change="event => objectSet('self.data', itemIndex + '.' + key, event.target.value)">
+                    </td></tr>
+                </table>
+                <btn type="success" @click="self.editindex = null"><span class="glyphicon glyphicon-ok"></span> Guardar</btn>
+            </div>
+            <div v-else>
+                <h4 class="list-group-item-heading col-sm-6">{{item.Nombre}} </h4>
+                <div class="col-sm-3">
+                    {{item.Telefono}} 
+                </div>
+                <div class="col-sm-3 text-right">
+                    <btn type="danger" @click="arraySplice('self.data', '', itemIndex, 1)"><span class="glyphicon glyphicon-trash"></span></btn>
+                    <btn @click="self.editindex = itemIndex"><span class="glyphicon glyphicon-pencil"></span></btn>
+                </div>
+
+                <p class="list-group-item-text col-sm-12 text-muted">{{item.Descripcion}}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default"> 
+        <div class="panel-heading">Agregar</div>
+            <div class="panel-body">
+            <table class="table table-stripped col-sm-5">
+                <tr><th class="col-sm-4 text-right">Nombre</th> <td> 
+                    <input type="text" class="form-control" :value="self.template.Nombre" @change="event => objectSet('self.template', 'Nombre', event.target.value)">
+                </td></tr>
+                <tr><th class="col-sm-4 text-right">Descripcion</th> <td> 
+                    <input type="text" class="form-control" :value="self.template.Descripcion" @change="event => objectSet('self.template', 'Descripcion', event.target.value)">
+                </td></tr>
+                <tr><th class="col-sm-4 text-right">Telefono</th> <td> 
+                    <input type="text" class="form-control" :value="self.template.Telefono" @change="event => objectSet('self.template', 'Telefono', event.target.value)">
+                </td></tr>
+            </table>
+
+            <btn type="success" @click="arrayPush('self.data', '', self.template); self.template = {'Nombre':'','Descripcion':'','Telefono': ''}">Add</btn>
+        </div>
+    </div>
+</div>
