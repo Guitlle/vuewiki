@@ -6,7 +6,9 @@ type: text/vnd.tiddlywiki
 
 ''VueWiki'' is a plugin that integrates vue.js with tiddlywiki. It is integrated with ''[ext[uiv|https://uiv.wxsm.space/getting-started]]'', a library of vue.js components that uses bootstrap. This plugin also includes bootstrap css and glyphicons. 
 
-To make a vue.js tiddler use the type ``application/vuejs-uiv``. The text of the tiddler will be used as the vue template and the tiddler fields will be available through the "self" namespace. You can also import another tiddler by having a field like so: 
+The source code is [ext[here|//github.com/Guitlle/vuewiki]].
+
+To make a vue.js tiddler use the type ``application/prs.vuejs``. This automatically includes the Uiv components library. The text of the tiddler will be used as the vue template and the tiddler fields will be available through the "self" namespace. You can also import another tiddler by having a field like so: 
 
 ```
 tiddler_namespace: My External Tiddler
@@ -14,5 +16,12 @@ tiddler_namespace: My External Tiddler
 
 To access the text content of that tiddler you would use the following path: ``imports.namespace.text``. If you want to get another field, put the field name instead of  ``text``.
 
+See the [[Sample Vue Tiddler]] to see a working demo. Edit it to see how fields are accessed
 
-See the [[Sample Vue Tiddler]] to see a working demo.
+!!! Helper functions
+
+| arrayPush(fieldPath, extraPath, item)|This function pushes an item to an array. The fieldPath is a string of the path of the field to modify. For instance, if you want to push an item to an array in the current tiddler named "array1", this should be "self.array1". If it is in an imported tiddler named "external", this should be "imports.external.array1". extraPath is the path to the array if it is contained in a json object. item is the item that will be pushed.|
+| arraySplice(fieldPath, extraPath, start, delCount, item)|This function calls the splice function on an array. The fieldPath and extraPath are the same as above. start, delCount and item are the arguments you would normally pass to splice. The resulting array is assigned in place.|
+| objectSet(fieldPath, extraPath, value)|This sets a value in a JSON object.|
+
+The [[Sample Vue Tiddler]] shows how to use these functions.

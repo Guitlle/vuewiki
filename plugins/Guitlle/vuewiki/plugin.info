@@ -2,7 +2,7 @@
     "title": "$:/plugins/Guitlle/vuewiki",
     "description": "Vue.js integration for tiddlywiki.",
     "author": "Guitlle",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "core-version": ">=5.0.0",
     "plugin-type": "plugin",
     "list": "readme"

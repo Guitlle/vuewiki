@@ -23,9 +23,33 @@ var Vue = require("$:/usr/lib/vue/vue.min.js"),
 
 Vue.use(Uiv);
 
+function bindTWField(wiki, objectClone, tiddler, field) {
+    Object.defineProperty(objectClone, field, {
+        get: function () {
+            var tidObject = wiki.getTiddler(tiddler),
+                value = null;
+            try {
+                value = JSON.parse(tidObject.fields[field]);
+            }
+            catch (e) {
+                value = tidObject.fields[field];
+            }
+            return value;
+        },
+        set: function (newVal) { 
+            var tidObject = wiki.getTiddler(tiddler),
+                val = tidObject.fields[field];
+            newVal = JSON.stringify(newVal);
+            if (val == newVal) return;
+            wiki.setText(tiddler, field, null, newVal);
+        },
+        enumerable: true
+    });
+}
+
 var VueWrapper = function(parseTreeNode,options) {
-	this.initialise(parseTreeNode,options);
-	this.importsMap = {};
+    this.initialise(parseTreeNode,options);
+    this.importsMap = {};
 };
 
 VueWrapper.prototype = new Widget();
@@ -39,40 +63,39 @@ VueWrapper.prototype.refresh = function (changedTiddlers) {
     });
     if (changedTiddlers[that.currentTiddler.fields.title]) {
         that.currentTiddler = that.wiki.getTiddler(that.getVariable("currentTiddler"));
-    	Object.assign(selfData, that.currentTiddler.fields);
+        Object.assign(selfData, that.currentTiddler.fields);
         Object.getOwnPropertyNames(selfData).forEach(function (field) {
-            if (that.blockUpdate && field!=="text") {
+            if (field!=="text") {
                 that.app.$data.self[field] = selfData[field];
-                that.blockUpdate = false;
-    	    }
-    	});  
+            }
+        });  
     }
 };
 
 VueWrapper.prototype.importTiddler = function(name) {
-    // import that to local scope
     var importTd = this.wiki.getTiddler(name),
-        importData = {}, importProcessedData = {};
+        importData = {}, importProcessedData = {},
+        that = this;
+    // Temporary clone just to iterate over the object properties.
+    // The TW native object is not iterable.
     Object.assign(importData, importTd.fields);
     Object.getOwnPropertyNames(importData).forEach(function (importField) {
-        try {
-            importProcessedData[importField] = JSON.parse(importData[importField]);
-        }
-        catch (e) {
-            importProcessedData[importField] = importData[importField];
-        }
+        bindTWField(that.wiki, importProcessedData, name, importField)
     });
+    // ensure clone is deleted
+    importData = null;
     return importProcessedData;
 };
 
 VueWrapper.prototype.render = function(parent,nextSibling) {
-	this.parentDomNode = parent;
-	this.execute();
-	this.currentTiddler = this.wiki.getTiddler(this.getVariable("currentTiddler"));
-	var that = this,
-	    vueInstance = VueInstances[that.currentTiddler.fields.title],
+    this.parentDomNode = parent;
+    this.execute();
+    this.currentTiddlerTitle = this.getVariable("currentTiddler");
+    this.currentTiddler = this.wiki.getTiddler(this.currentTiddlerTitle);
+    var that = this,
+        vueInstance = VueInstances[that.currentTiddler.fields.title],
         foundParentNode = (vueInstance !== undefined) && that.document.contains(vueInstance.$el),
-        selfData = {}, imports = {}, watches = {};
+        selfData = {}, selfBindings = {}, imports = {}, watches = {};
     
     
     if (vueInstance !== undefined && !foundParentNode) {
@@ -80,7 +103,7 @@ VueWrapper.prototype.render = function(parent,nextSibling) {
         delete VueInstances[this.currentTiddler.fields.title];
     }
 
-	Object.assign(selfData, that.currentTiddler.fields);
+    Object.assign(selfData, that.currentTiddler.fields);
     delete selfData.text;
 
     Object.getOwnPropertyNames(selfData).forEach(function (field) {
@@ -93,50 +116,88 @@ VueWrapper.prototype.render = function(parent,nextSibling) {
             }
         }
         else {
-            try {
-                selfData[field] = JSON.parse(selfData[field]);
-            }
-            catch (e) {
-                selfData[field] = selfData[field];
-            }
+            bindTWField(that.wiki, selfBindings, that.currentTiddlerTitle, field)
         }
     });
     
-	if (vueInstance === undefined || !foundParentNode) {
-    	var domNode = this.document.createElement("div");
-    	parent.insertBefore(domNode,nextSibling);
-    	var watches = {};
-    	Object.getOwnPropertyNames(selfData).forEach(function (field) {
-    	    if (field!=="text") {
-    	        watches["self." + field] = {
-    	            handler: function (after, before){
-                        that.app.blockUpdate = true;
-                        that.wiki.setText(that.currentTiddler.fields.title,field,null,JSON.stringify(after));
+    selfData = null;
+    
+    if (vueInstance === undefined || !foundParentNode) {
+        var domNode = this.document.createElement("div");
+        parent.insertBefore(domNode,nextSibling);
+        this.app = VueInstances[this.currentTiddlerTitle] = new Vue({
+                el: domNode,
+                template: this.parseTreeNode.children[0].value,
+                data: {
+                    self: selfBindings,
+                    imports: imports
+                },
+                methods: {
+                    wikify: function (wikiText) {
+                        return that.wiki.renderText("text/html", "text/vnd.tiddlywiki", wikiText)
+                    },
+                    arrayPush: function(fieldPath, extraPath, item) {
+                        var pointer = this.$data,
+                            pathKeys = fieldPath.split(".");
+                        for(var i = 0; i < pathKeys.length - 1; i++) { 
+                            pointer = pointer[pathKeys[i]];
+                        }
+                        var pointer2 = pointer[pathKeys[pathKeys.length - 1]];
+                        if (extraPath !== "") {
+                            var pathKeys2 = extraPath.split(".")
+                            for(var i = 0; i < pathKeys2.length - 1; i++) { 
+                                pointer2 = pointer2[pathKeys2[i]];
+                            }
+                            var target = pointer2[pathKeys2[pathKeys2.length-1]];
+                            target.push(item);
+                        }
+                        else {
+                            pointer2.push(item);
+                        }
+                        this.$set(pointer, pathKeys[pathKeys.length - 1], pointer2);
+                    },
+                    arraySplice: function(fieldPath, extraPath, start, delCount, item) {
+                        var pointer = this.$data,
+                            pathKeys = fieldPath.split(".");
+                        for(var i = 0; i < pathKeys.length - 1; i++) { 
+                            pointer = pointer[pathKeys[i]];
+                        }
+                        var pointer2 = pointer[pathKeys[pathKeys.length - 1]];
+                        if (extraPath !== "") {
+                            var pathKeys2 = extraPath.split(".")
+                            for(var i = 0; i < pathKeys2.length - 1; i++) { 
+                                pointer2 = pointer2[pathKeys2[i]];
+                            }
+                            var target = pointer2[pathKeys2[pathKeys2.length-1]];
+                            target = target.splice(start, delCount, item);
+                        }
+                        else {
+                            pointer2 = pointer2.splice(start, delCount, item);
+                        }
+                        this.$set(pointer, pathKeys[pathKeys.length - 1], pointer2);
+                    },
+                    objectSet: function(fieldPath, extraPath, value) {
+                        var pointer = this.$data,
+                            pathKeys = fieldPath.split(".");
+                        for(var i = 0; i < pathKeys.length - 1; i++) { 
+                            pointer = pointer[pathKeys[i]];
+                        }
+                        var pointer2 = pointer[pathKeys[pathKeys.length - 1]];
+                        if (extraPath !== "") {
+                            var pathKeys2 = extraPath.split(".")
+                            for(var i = 0; i < pathKeys2.length - 1; i++) { 
+                                pointer2 = pointer2[pathKeys2[i]];
+                            }
+                            pointer2[pathKeys2[pathKeys2.length-1]] = value;
+                            this.$set(pointer, pathKeys[pathKeys.length - 1], pointer2);
+                        }
                     }
-        	    }
-    	    }
-    	});
-    	this.app = VueInstances[this.currentTiddler.fields.title] = new Vue({
-              el: domNode,
-              template: this.parseTreeNode.children[0].value,
-              data: {
-                self: selfData,
-                imports: imports
-              },
-              watch: watches,
-              methods: {
-              }
+                }
             });
-        this.app.blockUpdate = false;
     }
     else {
-        this.app = VueInstances[this.currentTiddler.fields.title];
-        Object.getOwnPropertyNames(selfData).forEach(function (field) {
-            if (!that.app.blockUpdate && field!=="text") {
-                that.app.$data.self[field] = selfData[field];
-    	    }
-    	});  
-    	this.app.blockUpdate = false;
+        this.app = VueInstances[this.currentTiddlerTitle];
+        this.app.$forceUpdate();
     }
 };
 
